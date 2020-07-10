@@ -1,0 +1,94 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zrf.manager.mapper.MemberMapper">
+    <resultMap id="BaseResultMap" type="com.zrf.manager.entity.Member">
+        <id column="member_id" jdbcType="INTEGER" property="memberId"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="sex" jdbcType="VARCHAR" property="sex"/>
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+        <result column="nickname" jdbcType="VARCHAR" property="nickname"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="email" jdbcType="VARCHAR" property="email"/>
+        <result column="create_time" jdbcType="DATE" property="createTime"/>
+        <result column="update_time" jdbcType="DATE" property="updateTime"/>
+        <result column="icon" jdbcType="VARCHAR" property="icon"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+    </resultMap>
+
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT member_id,username,sex,phone,email,address,create_time,status
+        FROM member
+        <trim prefix="where" prefixOverrides="AND">
+            <if test="member.username != null">
+                AND (username like concat ('%',#{member.username},'%')
+                or phone like concat ('%',#{member.username},'%')
+                or email like concat ('%',#{member.username},'%'))
+            </if>
+            <if test="member.createTime != null">
+                AND create_time between concat(#{member.createTime},' 00:00:00') and concat( #{member.createTime} ,'
+                23:59:59')
+            </if>
+        </trim>
+        limit #{limit},#{offset}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO member(username,password,sex,address,phone,email)
+        VALUES (#{member.username},#{member.password},#{member.sex},#{member.address},#{member.phone},#{member.email})
+    </insert>
+
+    <update id="update">
+        UPDATE member
+        <set>
+            <if test="member.username != null" >
+                 username = #{member.username},
+            </if>
+            <if test="member.password != null">
+                 password = #{member.password},
+            </if>
+            <if test="member.nickname != null">
+                 nickname = #{member.nickname},
+            </if>
+            <if test="member.phone != null">
+                 phone = #{member.phone},
+            </if>
+            <if test="member.email != null">
+                 email = #{member.email},
+            </if>
+            <if test="member.status != null">
+                 status = #{member.status},
+            </if>
+            <if test="member.icon != null">
+                 icon = #{member.icon},
+            </if>
+        </set>
+        WHERE member_id = #{member.memberId}
+    </update>
+    <update id="delete">
+       UPDATE member
+       SET status = 1
+       WHERE member_id = #{memberId}
+        AND status = 0
+    </update>
+
+    <update id="active">
+        UPDATE member
+        SET status = 0
+        WHERE member_id = #{memberId}
+        AND status = 1
+    </update>
+
+    <update id="deleteBatch">
+        UPDATE member
+        SET status = 1
+        WHERE member_id IN
+        <foreach collection="ids" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+        AND status = 0
+    </update>
+
+
+</mapper>
